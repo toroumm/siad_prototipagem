@@ -53,12 +53,17 @@ def retangulo(event, x,y , flags, param):
     global xx, yy, press, fract_img, aux, pattern1,pattern2,patternDefine, number_image, descriptor
     global a,aa,b,bb
 
+    if event == cv2.EVENT_RBUTTONDOWN:
+
+					 	
+
+
     if event == cv2.EVENT_LBUTTONDOWN:
-            #print 'LBUTTON'
-	    fract_img = np.copy(aux_puro)	
+    	#print 'LBUTTON'
+    	fract_img = np.copy(aux_puro)	
            
-            xx,yy = x,y
-            press = True
+	xx,yy = x,y
+    	press = True
 
     elif event == cv2.EVENT_MOUSEMOVE:
 	

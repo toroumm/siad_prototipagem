@@ -20,31 +20,29 @@ def open_window(name,img):
 beginx = 0
 beginy = 0
 size = 1000
-shiftx = 100
+shiftx = 50
 shifty = 600
 
-dir_name = 'resultado_win_'+str(size)+'_shiftx_'+str(shiftx)+'_shifty_'+str(shifty)
+dir_name = 'resultado_prop_win_'+str(size)+'_shiftx_'+str(shiftx)+'_shifty_'+str(shifty)
 
+list_points = [0.05,0.1,0.15,]
 
-list_points = [5,10,15,20,25,30]
-
-dirs = os.listdir('compare_img/')
+dirs = os.listdir('../compare_img/')
 
 if dir_name not in dirs:
 
-	os.mkdir('compare_img/'+dir_name)
+	os.mkdir('../compare_img/'+dir_name)
 	for i in list_points:
-		os.mkdir('compare_img/'+dir_name+'/'+'points_'+str(i))
+		os.mkdir('../compare_img/'+dir_name+'/'+'points_'+str(i))
 
-img1 = cv2.imread('base_img/mosaico.tif')
+img1 = cv2.imread('../base_img/mosaico.tif')
 
-img2 = cv2.imread('base_img/mosaico_modificado.tif')
+img2 = cv2.imread('../base_img/mosaico_modificado.tif')
 
-cv2.imwrite('mosaico_modificado_resize.png', img2)
+#cv2.imwrite('mosaico_modificado_resize.png', img2)
 
 cv2.imwrite('mosaico_resize.png', img1)
 
-sys.exit()
 
 width = img1.shape[0]
 
@@ -69,7 +67,7 @@ bf = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=True)
 
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 
-out = cv2.VideoWriter('resultado_win_'+str(size)+'_shiftx_'+str(shiftx)+'_shifty_'+str(shifty)+'.avi',fourcc, 20.0, (size,size))
+out = cv2.VideoWriter('../resultado_win_'+str(size)+'_shiftx_'+str(shiftx)+'_shifty_'+str(shifty)+'.avi',fourcc, 20.0, (size,size))
 
 
 while(1):
@@ -87,13 +85,19 @@ while(1):
 
 	match = sorted(match, key=lambda x:x.distance)
 
-	points = len([m.distance for m in match if m.distance < 5])
+	ko = [m.distance for m in match if m.distance < 10]
+	
+	totalp = [m.distance for m in match ]
+
+	points = float(float(len(ko))/float(len(totalp)))
+
+	print 'proportion', len(ko), len(totalp), points
 	cir = False
 	for p in list_points:
 		if points <= p and points > 0:
-			if p <= 15:
+			if p <= 0.05:
 				cir = True
-			cv2.imwrite('compare_img/'+dir_name+'/'+'points_'+str(p)+'/'+str(fy)+'_'+str(fyy)+'_'+str(fx)+'_'+str(fxx)+'_'+str(p)+'.png', np.concatenate((frac1,frac2), axis=1))
+			cv2.imwrite('../compare_img/'+dir_name+'/'+'points_'+str(p)+'/'+str(fy)+'_'+str(fyy)+'_'+str(fx)+'_'+str(fxx)+'_'+str(p)+'.png', np.concatenate((frac1,frac2), axis=1))
 	if cir == True:
 				
 		for c in xrange(10,100,10):		
