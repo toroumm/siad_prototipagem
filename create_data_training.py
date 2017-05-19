@@ -16,6 +16,11 @@ import cv2, os,sys
 
 a,aa,b,bb =0,0,0,0
 
+cordx = None
+cordy = None
+index = 0
+data_cords = {} 
+
 
 descriptor = None
 
@@ -55,7 +60,8 @@ def retangulo(event, x,y , flags, param):
 
     if event == cv2.EVENT_RBUTTONDOWN:
 
-					 	
+ 	with open('coordenadas.json') as ddd:
+		json.dump(data_cords,ddd)   							 	
 
 
     if event == cv2.EVENT_LBUTTONDOWN:
@@ -105,7 +111,9 @@ def retangulo(event, x,y , flags, param):
 	press = False
 
     elif event == cv2.EVENT_LBUTTONDBLCLK:
-	a = 0
+	#a = 0
+	data_cords[index] = [a,aa,b,bb]
+	index += 1
     	#cv2.imwrite('padroes_teste/'+str(a)+'_'+str(aa)+'_'+str(b)+'_'+str(bb)+'.jpg',pattern1)
 
     elif event == cv2.EVENT_RBUTTONDBLCLK:
@@ -155,12 +163,12 @@ def retangulo(event, x,y , flags, param):
    
 
 
-path_img = ''#'/home/jeferson/Desktop/imagens_mosaico/' #'/home/jeferson/MEGA/IEAv/imagens_mosaico/'
+path_img = '../'#'/home/jeferson/Desktop/imagens_mosaico/' #'/home/jeferson/MEGA/IEAv/imagens_mosaico/'
 
 
 #img = cv2.imread(path_img+ 'univap-final_transparent_mosaic_COM-APOIO.tif')
 
-img = cv2.imread('lena.jpg')
+img = cv2.imread('../lena.jpg')
 
 #asd = cv2.resize(img, (900,900))
 
