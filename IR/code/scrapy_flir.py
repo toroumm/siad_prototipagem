@@ -6,7 +6,11 @@ import random
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from matplotlib.widgets import Slider
+import matplotlib.gridspec as gridspec
 
+#from matplotlib.backends.backend_gtk import FigureCanvasGTK
+ 
 
 '''
 Formula temperatura
@@ -14,10 +18,14 @@ Formula temperatura
 T = B / np.log(R1/(R2*(img+O))+F)
 
 '''
+def get_clusters(termal, img):
 
-def mouse_event(event):
+	mean, desvpad = np.mean(termal), np.std(termal)	
 
-	print  event.pickx, event.picky
+	img[termal <= (mean+desvpad) ] = 0
+
+	return img
+
 #*************************************************************************************************
 
 COLORS = [ (202, 201, 197),  # Light gray
@@ -31,6 +39,53 @@ COLORS = [ (202, 201, 197),  # Light gray
     			(75, 64, 191),    # Red blue
     			(237, 124, 60),    # orange
 		]
+
+#*************************************************************************************************
+def mouse_event(event):
+
+	#print  event.x, event.y
+	global imgThermal
+	
+	print 'Temperatura',imgThermal[int(event.xdata),int(event.ydata)]
+
+
+
+#*************************************************************************************************
+
+def threshold(value):
+
+	global imgSeg, figure, imgThermal, gs, legenda
+
+	c = np.copy(imgSeg[:imgThermal.shape[0], :imgThermal.shape[1]])
+
+	c[imgThermal <= int(value) ] = 0
+
+	ax2 = figure.add_subplot(1,2,1)#gs[4:8])
+
+	#ax2.set_position(gs[6:7].get_position(figure))
+
+	ax2.set_title('Segmentado')
+
+	ax2.axis('off')
+		
+	plt.imshow(imgSeg[:imgThermal.shape[0], :imgThermal.shape[1]])
+
+	'''
+	ax2 = figure.add_subplot(gs[0:6])
+
+	ax2.set_position(gs[0:6].get_position(figure))
+
+	ax2.set_title('Segmentado')
+
+	ax2.axis('off')
+		
+	plt.imshow(imgSeg[:imgThermal.shape[0], :imgThermal.shape[1]])
+
+	figure.tight_layout() 
+	'''
+	plt.imshow(c)
+	
+	figure.canvas.draw()
 
 #*************************************************************************************************
 
@@ -92,7 +147,7 @@ def get_temperature(param, data):
 
 path = '../images/'#'/media/sf_ownCloud/visao_computacional/FLIR/imagens/'
 
-scope = range(0,100,30)
+scope = range(0,100,10)
 
 color = []
 
@@ -100,11 +155,13 @@ for i in range(len(scope)-1):
 
 	color.append(tuple(next(next_color(COLORS))))
 
-print color 
+print color, len(color)
 
 legenda = np.zeros(((len(scope)-1)*30,75,3))
 
 k =0
+
+imgOrignal, imgSeg,  = None, None
 
 font = cv2.FONT_HERSHEY_COMPLEX_SMALL
 for i in range(0,legenda.shape[0],30):
@@ -127,62 +184,95 @@ for arquivo in os.listdir(path):
 
 		imgThermal =  get_temperature(param, raw)
 
-		asd = np.zeros((imgThermal.shape[0], imgThermal.shape[1],3))
+		imgSeg = np.zeros((imgThermal.shape[0], imgThermal.shape[1],3))
 
 		for i in xrange(0, imgThermal.shape[0]):
+
 			for j in xrange(0, imgThermal.shape[1]):
+
 				for k in xrange(1, len(scope)-1):
-					
+					 
 					if(imgThermal[i,j]>= scope[k-1] and imgThermal[i,j] < scope[k]):
-						asd[i,j,0] = color[k][0]
 
-						asd[i,j,1] = color[k][1]
+						#if i > 450 and j > 300 and i < 480 and j < 320: 
+						#	print k, scope[k-1],scope[k] , imgThermal[i,j], color[k] 
+						imgSeg[i,j,0] = color[k-1][0]
 
-						asd[i,j,2] = color[k][2]
+						imgSeg[i,j,1] = color[k-1][1]
+
+						imgSeg[i,j,2] = color[k-1][2]
 						
 						break
-						
-		figure  = plt.figure()
-
+			
+		figure  = plt.figure(figsize=(8,6)) 
 		
-
-		one = figure.add_subplot(1,3,1)
-
-		one.set_title('Original')
-
-		one.axis('off')
-
-		one.canvas.mpl_connect('pick_event', mouse_event)	
-
-		plt.imshow(cv2.imread(path+arquivo))
-
-		two = figure.add_subplot(1,3,2)
-
-		two.set_title('Segmentado')
-
-		two.axis('off')
+		gs = gridspec.GridSpec(1,9)
 		
-		plt.imshow(asd)
+		#****************************************************
+		
+		#ax1 =figure.add_subplot(121)#gs[:4])
+		
+		#ax1.set_position(gs[1:2].get_position(figure))
 
-		tree = figure.add_subplot(1,3,3)
+		#ax1.set_title('Original')
 
-		tree.set_title('Legenda')
+		#ax1.axis('off')
 
-		tree.axis('off')
+		imgOrignal = cv2.imread(path+arquivo)
 
+		#plt.imshow(imgOrignal[:imgThermal.shape[0], :imgThermal.shape[1]])
+
+		#****************************************************
+
+		ax2 = figure.add_subplot(121)#gs[0:6])
+
+		#ax2.set_position(gs[0:6].get_position(figure))
+
+		ax2.set_title('Segmentado')
+
+		ax2.axis('off')
+		
+		plt.imshow(imgSeg[:imgThermal.shape[0], :imgThermal.shape[1]])
+
+		#figure.tight_layout() 
+
+		#****************************************************
+
+		ax3 = figure.add_subplot(1,7,6)#gs[7:9])
+
+		#ax3.set_position(gs[7:9].get_position(figure))
+
+		ax3.set_title('Legenda')
+
+		ax3.axis('off')
+		
 		plt.imshow(legenda)
 
-		
-			
+		#****************************************************
+
+		figure2 = plt.figure()
+
+		ax4  = figure2.add_subplot(1,1,1)
+
+		ax4.set_title('Pontos Acima do Desvio Padrao')
+
+		ax4.axis('off')
+
+		plt.imshow(get_clusters(imgThermal,imgOrignal))
+	
+		figure.canvas.mpl_connect('button_press_event',mouse_event)
+
+		ax = figure.add_axes([0.1, 0.85, 0.85, 0.1]) 
+
+		trackbar = Slider(ax,'Filtro',0,100,1)
+
+		trackbar.on_changed(threshold)	
+
+		#print 'TAMANHO', plt.rcParams["figure.figsize"]
+	  	
 		plt.show()
 
 		sys.exit()
-		#print np.max(imgThermal), np.min(imgThermal), np.mean(imgThermal)
-		#open_window('teste',asd)
-		#open_window('original',cv2.imread(path+arquivo))
-		#cv2.imwrite(path+'testes/'+arquivo[:-3]+'_teste.jpg',asd)
-
-		#cv2.waitKey(0)
 #*************************************************************************************************
 
 
